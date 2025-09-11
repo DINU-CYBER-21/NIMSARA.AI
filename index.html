@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIMSARA AI Chatbot</title>
+<style>
+/* Reset */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; height:100vh; overflow:hidden; background:radial-gradient(circle at top,#000 0%,#05010d 100%); color:#fff; }
+body.dark { background:#111; color:#eee; }
+
+/* Shooting stars background */
+body::before { content:""; position:absolute; inset:0; background:url('https://i.ibb.co/4tR7b30/star-bg.png') repeat; background-size:cover; animation:moveStars 200s linear infinite; z-index:0; opacity:0.5;}
+@keyframes moveStars { from{background-position:0 0;} to{background-position:-2000px 2000px;} }
+
+/* Floating Orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.6;animation:floatOrb 20s infinite ease-in-out;z-index:0;}
+.orb:nth-child(1){width:400px;height:400px;background:#ff00cc;top:10%;left:-100px;}
+.orb:nth-child(2){width:300px;height:300px;background:#00ccff;bottom:-150px;right:-80px;animation-delay:5s;}
+@keyframes floatOrb {0%,100%{transform:translateY(0) translateX(0);}50%{transform:translateY(-50px) translateX(50px);}}
+
+/* Chat Container */
+.chat-container{position:relative; max-width:600px; margin:auto; height:100vh; display:flex; flex-direction:column; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.6); backdrop-filter:blur(15px); z-index:2; box-shadow:0 0 40px rgba(0,0,0,0.8); border-radius:20px; overflow:hidden;}
+
+/* Header */
+.chat-header{background:linear-gradient(90deg,#0084ff,#00ccff); color:white; padding:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(0,0,0,0.6);}
+.chat-header-left{display:flex; align-items:center; gap:10px;}
+.chat-header img{width:40px;height:40px; border-radius:50%; box-shadow:0 0 20px #00cfff;}
+.chat-header h2{margin:0;font-size:18px;font-weight:bold;text-shadow:0 0 10px #000;}
+.chat-header button{margin-left:5px;padding:6px 12px;border:none;border-radius:12px;cursor:pointer;font-size:14px;transition:0.3s;}
+.mode-btn{background:#333;color:#fff;}
+.clear-btn{background:#ff0040;color:#fff;}
+.chat-header button:hover{transform:scale(1.1);}
+
+/* Chat Box */
+.chat-box{flex:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;}
+.message{padding:12px 16px;margin:5px 0;border-radius:18px;max-width:70%;line-height:1.4;word-wrap:break-word;animation:fadeInUp 0.4s forwards;box-shadow:0 4px 12px rgba(0,0,0,0.4);}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px);}to{opacity:1;transform:translateY(0);}}
+.user{align-self:flex-end;background:linear-gradient(135deg,#0084ff,#00ccff);color:white;border-bottom-right-radius:5px;}
+.bot{align-self:flex-start;background:rgba(255,255,255,0.1);color:#fff;border-bottom-left-radius:5px;}
+body.dark .bot{background:rgba(255,255,255,0.05);}
+
+/* Input */
+.chat-input{display:flex;padding:10px;border-top:1px solid #333;background:rgba(0,0,0,0.7);}
+.chat-input input{flex:1;padding:12px;border:none;border-radius:20px;outline:none;background:rgba(255,255,255,0.1);color:#fff;}
+.chat-input input::placeholder{color:#bbb;}
+.chat-input button{margin-left:10px;padding:12px 22px;border:none;border-radius:20px;background:linear-gradient(135deg,#0084ff,#00ccff);color:white;cursor:pointer;transition:0.3s;}
+.chat-input button:hover{transform:scale(1.1);}
+
+/* Typing */
+.typing{display:flex;align-items:center;margin:5px 0;padding:10px 15px;border-radius:18px;background:rgba(255,255,255,0.1);width:60px;justify-content:space-around;animation:fadeInUp 0.3s forwards;}
+.dot{width:8px;height:8px;background:#fff;border-radius:50%;animation:blink 1.4s infinite;}
+.dot:nth-child(2){animation-delay:0.2s;}
+.dot:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,100%{opacity:.2;}20%{opacity:1;}}
+
+/* Mobile adjustments */
+@media(max-width:500px){.chat-container{max-width:100%;height:100vh;border-radius:0;} .chat-header h2{font-size:16px;} .chat-input button{padding:10px 18px;}}
+</style>
+</head>
+<body>
+<div class="orb"></div>
+<div class="orb"></div>
+
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <img src="https://files.catbox.moe/uo4l8x.jpg" alt="Logo">
+      <h2>NIMSARA AI</h2>
+    </div>
+    <div>
+      <button class="mode-btn" onclick="toggleDarkMode()">🌙</button>
+      <button class="clear-btn" onclick="clearChat()">🗑</button>
+    </div>
+  </div>
+  <div id="chat-box" class="chat-box"></div>
+  <div class="chat-input">
+    <input id="user-input" type="text" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+const chatBox=document.getElementById("chat-box");
+const userInput=document.getElementById("user-input");
+
+// 🔑 Single API key (ඔයා දුන්න API key)
+const GEMINI_API_KEYS=["AIzaSyBdBivCo6jWSchTb8meP7VyxbHpoNY_qfQ"];
+let currentKey=0;
+
+function toggleDarkMode(){document.body.classList.toggle("dark");}
+function clearChat(){chatBox.innerHTML="";}
+function addMessage(text,sender){const message=document.createElement("div");message.classList.add("message",sender);message.innerText=text;chatBox.appendChild(message);chatBox.scrollTop=chatBox.scrollHeight;}
+function addTypingIndicator(){const typing=document.createElement("div");typing.classList.add("typing");typing.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';typing.id="typing";chatBox.appendChild(typing);chatBox.scrollTop=chatBox.scrollHeight;}
+function removeTypingIndicator(){const typing=document.getElementById("typing");if(typing) typing.remove();}
+
+async function sendMessage(){
+  const text=userInput.value.trim();
+  if(!text) return;
+  addMessage(text,"user");
+  userInput.value="";
+  addTypingIndicator();
+  const lower=text.toLowerCase();
+
+  // Bad words filter
+  const badWords=["හුත්තා","පක","පොන්න","huttha","pakaya","ponnaya"];
+  if(badWords.some(w=>lower.includes(w))){
+    removeTypingIndicator();
+    addMessage("😂 AI roast mode: ඔය වචන වලින් brain එක corrupt!", "bot");
+    return;
+  }
+
+  // Custom replies
+  if(lower.includes("ඔයාව කව්ද හැදුවෙ")){
+    removeTypingIndicator();
+    addMessage("😎 Nimsara ayya තමයි මම හැදුවේ!", "bot");
+    return;
+  }
+
+  // API request with rotation
+  const key=GEMINI_API_KEYS[currentKey];
+  currentKey=(currentKey+1)%GEMINI_API_KEYS.length;
+  const GEMINI_API_URL=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+  try{
+    const response=await fetch(GEMINI_API_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{role:"user",parts:[{text}]}]})
+    });
+    const data=await response.json();
+    removeTypingIndicator();
+    if(data.candidates?.length>0){
+      addMessage(data.candidates[0].content.parts[0].text,"bot");
+    } else { addMessage("⚠️ No response from Gemini API","bot"); }
+  }catch(error){
+    removeTypingIndicator();
+    addMessage("🤖 Offline roast mode: Network එකක් නෑ 😂","bot");
+    console.error(error);
+  }
+}
+</script>
+</body>
+</html>
