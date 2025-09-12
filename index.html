@@ -7,9 +7,18 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>NIMSARA AI Chatbot</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: 'Segoe UI', Arial, sans-serif; height:100vh; overflow:hidden; background:radial-gradient(circle at top,#000 0%,#05010d 100%); color:#fff; }
-body.dark { background:#111; color:#eee; }
+.chat-input {
+  display:flex;
+  padding:10px;
+  border-top:1px solid #333;
+  background:rgba(0,0,0,0.7);
+  
+  /* 🆕 Add this */
+  margin-bottom:15px;   /* send bar එක bottom එකේ ටිකක් ඉහලට ගෙනාවි */
+  border-radius:20px;   /* මොඩල් look එකට */
+  width:95%;
+  align-self:center;
+}
 
 /* Shooting stars background */
 body::before { content:""; position:absolute; inset:0; background:url('https://i.ibb.co/4tR7b30/star-bg.png') repeat; background-size:cover; animation:moveStars 200s linear infinite; z-index:0; opacity:0.5;}
