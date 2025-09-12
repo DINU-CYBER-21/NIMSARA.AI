@@ -23,7 +23,10 @@
 /* Shooting stars background */
 body::before { content:""; position:absolute; inset:0; background:url('https://i.ibb.co/4tR7b30/star-bg.png') repeat; background-size:cover; animation:moveStars 200s linear infinite; z-index:0; opacity:0.5;}
 @keyframes moveStars { from{background-position:0 0;} to{background-position:-2000px 2000px;} }
-
+   html, body {
+  touch-action: manipulation;   /* Pinch zoom block */
+  overscroll-behavior: none;   /* scrolling issues fix */
+}
 /* Floating Orbs */
 .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.6;animation:floatOrb 20s infinite ease-in-out;z-index:0;}
 .orb:nth-child(1){width:400px;height:400px;background:#ff00cc;top:10%;left:-100px;}
